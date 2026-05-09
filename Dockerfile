@@ -1,21 +1,15 @@
-FROM ubuntu:22.04
-
-ENV DEBIAN_FRONTEND=noninteractive
+# Pake base python slim biar build ngebut parah
+FROM python:3.9-slim-buster
 
 USER root
 
-# Install tools inti + build essential
+# Install tools minimalis biar gak timeout
 RUN apt-get update && apt-get install -y \
-    sudo curl wget git vim python3 python3-pip \
-    bash-completion build-essential \
+    sudo curl wget git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Jupyter + Terminal Handler + Server Proxy
-RUN pip3 install --no-cache-dir \
-    notebook==6.4.12 \
-    terminado \
-    jupyter-server-proxy \
-    jupyter-console
+# Install notebook versi stabil & jupyter-server-proxy
+RUN pip install --no-cache-dir notebook==6.4.12 jupyter-server-proxy
 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
@@ -28,5 +22,5 @@ RUN echo "${NB_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER ${NB_USER}
 WORKDIR ${HOME}
 
-# Maksa Terminal diizinkan dan default shell ke BASH
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--NotebookApp.token=''", "--NotebookApp.disable_check_xsrf=True", "--NotebookApp.terminado_settings={'shell_command': ['/bin/bash']}"]
+# Entrypoint super simple biar bypass timeout
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--NotebookApp.token=''"]
